@@ -12,7 +12,9 @@ export const authMiddleware = async (req, res, next) => {
 
     if (!token) {
       //No authentication token, access denied
-      return res.status(200).json(null);
+      return res
+        .status(401)
+        .json({ message: "No authentication token, access denied" });
     }
 
     // Verify the token
@@ -23,7 +25,7 @@ export const authMiddleware = async (req, res, next) => {
 
     if (!user) {
       //USER NOT FOUND
-      return res.status(200).json(null);
+      return res.status(401).json({ message: "USER NOT FOUND" });
     }
 
     // Attach the user to the request object
