@@ -28,8 +28,6 @@ app.use("/api/coupon", couponRouter);
 app.use("/api/cart", cartRouter);
 app.use("/user", authRouter);
 
-console.log(process.env.MONGO_USERNAME, process.env.MONGO_PASSWORD);
-
 try {
   await mongoose.connect(
     `mongodb+srv://${process.env.MONGO_USERNAME}:${process.env.MONGO_PASSWORD}@cluster0.ihir0.mongodb.net/${process.env.MONGO_DB}?retryWrites=true&w=majority&appName=Cluster0`
