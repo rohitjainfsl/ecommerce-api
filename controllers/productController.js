@@ -5,11 +5,10 @@ import { uploadToCloudinary } from "../services/cloudinaryUpload.js";
 export async function createProduct(req, res) {
   try {
     let url = await uploadToCloudinary(req);
-    // console.log(url);
+    console.log(url, "uploaded file");
 
     let { name, brand, category, price, description, inStock, inventory } =
       req.body;
-    // console.log(req.user);
     const product = new productModel({
       name,
       url,
@@ -19,8 +18,9 @@ export async function createProduct(req, res) {
       description,
       inStock,
       inventory,
-      addedBy: req.user._id,
+      addedBy: "66e84ce94ba20855a40f9a1e",
     });
+    // console.log(product);
     await product.save();
     res.status(201).json({ message: "product added" });
   } catch (err) {
@@ -28,20 +28,23 @@ export async function createProduct(req, res) {
   }
 }
 
-//FETCH ALL PRODCUCT
+//FETCH ALL PRODUCTS
 export async function getAllProducts(req, res) {
   try {
     let query = {};
     let sortOption = {};
+    let aggregationPipeline = [];
 
     // Brand filter
     if (req.query.brand) {
       query.brand = req.query.brand;
+      query.brand = { $regex: new RegExp(`^${req.query.brand}$`, "i") };
     }
 
     // Category filter
     if (req.query.category) {
-      query.category = req.query.category;
+      // query.category = req.query.category;
+      query.category = { $regex: new RegExp(`^${req.query.category}$`, "i") };
     }
 
     // Price filter
@@ -74,8 +77,225 @@ export async function getAllProducts(req, res) {
       }
     }
 
-    const products = await productModel.find(query).sort(sortOption);
+    // const products = await productModel.find(query).sort(sortOption);
+
+    aggregationPipeline = [
+      { $match: query },
+      {
+        $addFields: {
+          ratings: {
+            $ifNull: ["$ratings", []],
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "ratings.postedBy",
+          foreignField: "_id",
+          as: "ratingUsers",
+        },
+      },
+      {
+        $addFields: {
+          ratings: {
+            $map: {
+              input: "$ratings",
+              as: "rating",
+              in: {
+                $mergeObjects: [
+                  "$$rating",
+                  {
+                    postedBy: {
+                      $let: {
+                        vars: {
+                          user: {
+                            $arrayElemAt: [
+                              {
+                                $filter: {
+                                  input: "$ratingUsers",
+                                  cond: {
+                                    $eq: ["$$this._id", "$$rating.postedBy"],
+                                  },
+                                },
+                              },
+                              0,
+                            ],
+                          },
+                        },
+                        in: {
+                          _id: "$$user._id",
+                          fullName: {
+                            $concat: [
+                              { $ifNull: ["$$user.firstname", ""] },
+                              {
+                                $cond: [
+                                  {
+                                    $and: [
+                                      { $ifNull: ["$$user.firstname", false] },
+                                      { $ifNull: ["$$user.lastname", false] },
+                                    ],
+                                  },
+                                  " ",
+                                  "",
+                                ],
+                              },
+                              { $ifNull: ["$$user.lastname", ""] },
+                            ],
+                          },
+                        },
+                      },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          ratingUsers: 0,
+          "ratings.postedBy.password": 0,
+          "ratings.postedBy.email": 0,
+          // Add any other fields you want to exclude
+        },
+      },
+    ];
+
+    // Add sort stage only if sortOption is not empty
+    if (Object.keys(sortOption).length > 0) {
+      aggregationPipeline.push({ $sort: sortOption });
+    }
+
+    // const products = await productModel.aggregate([
+    //   { $match: query },
+    //   {
+    //     $addFields: {
+    //       ratings: {
+    //         $ifNull: ["$ratings", []],
+    //       },
+    //     },
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: "users",
+    //       localField: "ratings.postedBy",
+    //       foreignField: "_id",
+    //       as: "ratingUsers",
+    //     },
+    //   },
+    //   {
+    //     $addFields: {
+    //       ratings: {
+    //         $map: {
+    //           input: "$ratings",
+    //           as: "rating",
+    //           in: {
+    //             $mergeObjects: [
+    //               "$$rating",
+    //               {
+    //                 postedBy: {
+    //                   $let: {
+    //                     vars: {
+    //                       user: {
+    //                         $arrayElemAt: [
+    //                           {
+    //                             $filter: {
+    //                               input: "$ratingUsers",
+    //                               cond: {
+    //                                 $eq: ["$$this._id", "$$rating.postedBy"],
+    //                               },
+    //                             },
+    //                           },
+    //                           0,
+    //                         ],
+    //                       },
+    //                     },
+    //                     in: {
+    //                       _id: "$$user._id",
+    //                       fullName: {
+    //                         $concat: [
+    //                           { $ifNull: ["$$user.firstname", ""] },
+    //                           {
+    //                             $cond: [
+    //                               {
+    //                                 $and: [
+    //                                   { $ifNull: ["$$user.firstname", false] },
+    //                                   { $ifNull: ["$$user.lastname", false] },
+    //                                 ],
+    //                               },
+    //                               " ",
+    //                               "",
+    //                             ],
+    //                           },
+    //                           { $ifNull: ["$$user.lastname", ""] },
+    //                         ],
+    //                       },
+    //                     },
+    //                   },
+    //                 },
+    //               },
+    //             ],
+    //           },
+    //         },
+    //       },
+    //     },
+    //   },
+    //   {
+    //     $project: {
+    //       ratingUsers: 0,
+    //       "ratings.postedBy.password": 0,
+    //       "ratings.postedBy.email": 0,
+    //       // Add any other fields you want to exclude
+    //     },
+    //   },
+    //   { $sort: sortOption },
+    // ]);
+
+    const products = await productModel.aggregate(aggregationPipeline);
+
     res.json(products);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+}
+
+//FETCH ALL CATEGORIES
+export async function getProductCategories(req, res) {
+  try {
+    const categories = await productModel.aggregate([
+      {
+        $group: {
+          _id: "$category",
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          category: "$_id",
+          count: 1,
+          _id: 0,
+        },
+      },
+      {
+        $sort: { category: 1 },
+      },
+    ]);
+
+    res.json(categories);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+}
+
+export async function getBrandsInCategory(req, res) {
+  try {
+    const { category } = req.params;
+    const brands = await productModel.distinct("brand", {
+      category: { $regex: new RegExp(`^${category}$`, "i") },
+    });
+    res.json(brands);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

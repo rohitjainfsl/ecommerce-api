@@ -17,6 +17,7 @@ const productSchema = new mongoose.Schema(
       },
     ],
     totalRating: { type: Number, default: 0 },
+    url: { type: String },
     addedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
