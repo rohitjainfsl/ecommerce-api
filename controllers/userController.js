@@ -4,12 +4,19 @@ import { generateToken } from "../services/tokenGenerate.js";
 
 export async function registerUser(req, res) {
   try {
-    let { firstname, lastname, email, password, role } = req.body;
+    let { firstname, lastname, email, password, role, gender } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
     password = hashedPassword;
-    const user = new userModel({ firstname, lastname, email, password, role });
+    const user = new userModel({
+      firstname,
+      lastname,
+      email,
+      password,
+      role,
+      gender,
+    });
     await user.save();
-    res.status(201).json({ message: "success" });
+    res.status(201).json({ message: "success", user: user });
   } catch (err) {
     res.status(500).json({ error: err });
   }
@@ -34,10 +41,10 @@ export async function loginUser(req, res) {
     const token = generateToken(checkUser);
 
     // Option 1: Send token in response body
-    return res.status(200).json({
-      message: "Login successful",
-      token,
-    });
+    // return res.status(200).json({
+    //   message: "Login successful",
+    //   token,
+    // });
 
     res
       .cookie("auth_token", token, {
