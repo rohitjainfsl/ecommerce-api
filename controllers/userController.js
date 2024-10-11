@@ -56,6 +56,7 @@ export async function loginUser(req, res) {
       .status(200)
       .json({
         message: "Login Successful",
+        user: checkUser,
       });
   } catch (err) {
     res.status(500).json({ error: err });
