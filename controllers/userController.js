@@ -49,7 +49,7 @@ export async function loginUser(req, res) {
     res
       .cookie("auth_token", token, {
         httpOnly: false,
-        secure: process.env.NODE_ENV === "production",
+        secure: "true",
         sameSite: "none",
         maxAge: 3600000,
       })
