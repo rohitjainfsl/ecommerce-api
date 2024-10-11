@@ -69,9 +69,8 @@ export const getUserCart = async (req, res) => {
         },
         quantity: item.quantity,
         attributes: item.attributes,
-        subtotal: item.product.price * item.quantity,
       })),
-      total,
+
       createdAt: cart.createdAt,
       updatedAt: cart.updatedAt,
     };
@@ -80,6 +79,58 @@ export const getUserCart = async (req, res) => {
   } catch (error) {
     console.error("Error fetching user cart:", error);
     res.status(500).json({ message: "Error fetching user cart" });
+  }
+};
+
+export const removeFromCart = async (req, res) => {
+  try {
+    const userId = req.user.id; // Assuming the user ID is available from the JWT token
+    const { productId, quantity, attributes } = req.body;
+
+    // Find the user's cart
+    const cart = await cartModel.findOne({ user: userId });
+
+    if (!cart) {
+      return res.status(404).json({ message: "Cart not found" });
+    }
+
+    // Find the index of the item in the cart
+    const itemIndex = cart.items.findIndex(
+      (item) =>
+        item.product.toString() === productId &&
+        JSON.stringify(item.attributes) === JSON.stringify(attributes)
+    );
+
+    if (itemIndex === -1) {
+      return res.status(404).json({ message: "Item not found in cart" });
+    }
+
+    // If quantity is not provided or is greater than or equal to the current quantity, remove the entire item
+    if (!quantity || quantity >= cart.items[itemIndex].quantity) {
+      cart.items.splice(itemIndex, 1);
+    } else {
+      // Otherwise, reduce the quantity
+      cart.items[itemIndex].quantity -= quantity;
+    }
+
+    // If cart becomes empty, you might want to delete it entirely
+    if (cart.items.length === 0) {
+      await cartModel.findByIdAndDelete(cart._id);
+      return res
+        .status(200)
+        .json({ message: "Cart is now empty and has been removed" }); 
+    }
+
+    // Save the updated cart
+    cart.updatedAt = new Date();
+    await cart.save();
+
+    res
+      .status(200)
+      .json({ message: "Item removed from cart successfully", cart });
+  } catch (error) {
+    console.error("Error removing item from cart:", error);
+    res.status(500).json({ message: "Error removing item from cart" });
   }
 };
 

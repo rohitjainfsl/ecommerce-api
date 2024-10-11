@@ -40,12 +40,6 @@ export async function loginUser(req, res) {
     //Create a token using JWT
     const token = generateToken(checkUser);
 
-    // Option 1: Send token in response body
-    // return res.status(200).json({
-    //   message: "Login successful",
-    //   token,
-    // });
-
     res
       .cookie("auth_token", token, {
         httpOnly: false,
@@ -66,8 +60,8 @@ export async function loginUser(req, res) {
 export async function logoutUser(req, res) {
   try {
     res.clearCookie("auth_token", {
-      httpOnly: true,
-      secure: false,
+      httpOnly: false,
+      secure: "true",
       sameSite: "none",
     });
     res.status(200).json({ message: "Logout successfully" });
