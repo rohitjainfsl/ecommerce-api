@@ -95,11 +95,11 @@ export const removeFromCart = async (req, res) => {
     }
 
     // Find the index of the item in the cart
-    const itemIndex = cart.items.findIndex(
-      (item) =>
-        item.product.toString() === productId &&
-        JSON.stringify(item.attributes) === JSON.stringify(attributes)
-    );
+    const itemIndex = cart.items.findIndex((item) => {
+      console.log(item.product.toString(), productId);
+      item.product.toString() === productId &&
+        JSON.stringify(item.attributes) === JSON.stringify(attributes);
+    });
 
     if (itemIndex === -1) {
       return res.status(404).json({ message: "Item not found in cart" });
@@ -118,7 +118,7 @@ export const removeFromCart = async (req, res) => {
       await cartModel.findByIdAndDelete(cart._id);
       return res
         .status(200)
-        .json({ message: "Cart is now empty and has been removed" }); 
+        .json({ message: "Cart is now empty and has been removed" });
     }
 
     // Save the updated cart
