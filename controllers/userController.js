@@ -48,9 +48,9 @@ export async function loginUser(req, res) {
 
     res
       .cookie("auth_token", token, {
-        httpOnly: false,
-        secure: false, //as we are working with localhost, which runs on http, not on https
-        sameSite: "strict",
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         maxAge: 3600000,
       })
       .status(200)
