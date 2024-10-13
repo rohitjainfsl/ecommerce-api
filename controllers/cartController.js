@@ -5,7 +5,7 @@ import { userModel } from "../models/userModel.js";
 export const addToCart = async (req, res) => {
   try {
     const { productId, quantity, attributes } = req.body;
-    const userId = req.user.id; // Assuming you have middleware to extract user ID from JWT
+    const userId = req.user.id;
 
     console.log(userId, "userid");
 
@@ -84,36 +84,28 @@ export const getUserCart = async (req, res) => {
 
 export const removeFromCart = async (req, res) => {
   try {
-    const userId = req.user.id; // Assuming the user ID is available from the JWT token
-    const { productId, quantity, attributes } = req.body;
+    const userId = req.user.id;
+    const { productId, attributes } = req.body;
 
-    // Find the user's cart
     const cart = await cartModel.findOne({ user: userId });
 
     if (!cart) {
       return res.status(404).json({ message: "Cart not found" });
     }
 
-    // Find the index of the item in the cart
-    const itemIndex = cart.items.findIndex((item) => {
-      console.log(item.product.toString(), productId);
-      item.product.toString() === productId &&
-        JSON.stringify(item.attributes) === JSON.stringify(attributes);
-    });
+    const itemIndex = cart.items.findIndex(
+      (item) =>
+        item.product.toString() === productId &&
+        JSON.stringify(item.attributes) === JSON.stringify(attributes)
+    );
 
     if (itemIndex === -1) {
       return res.status(404).json({ message: "Item not found in cart" });
     }
 
-    // If quantity is not provided or is greater than or equal to the current quantity, remove the entire item
-    if (!quantity || quantity >= cart.items[itemIndex].quantity) {
-      cart.items.splice(itemIndex, 1);
-    } else {
-      // Otherwise, reduce the quantity
-      cart.items[itemIndex].quantity -= quantity;
-    }
+    // Remove the item from the cart
+    cart.items.splice(itemIndex, 1);
 
-    // If cart becomes empty, you might want to delete it entirely
     if (cart.items.length === 0) {
       await cartModel.findByIdAndDelete(cart._id);
       return res
@@ -121,7 +113,6 @@ export const removeFromCart = async (req, res) => {
         .json({ message: "Cart is now empty and has been removed" });
     }
 
-    // Save the updated cart
     cart.updatedAt = new Date();
     await cart.save();
 
@@ -133,6 +124,129 @@ export const removeFromCart = async (req, res) => {
     res.status(500).json({ message: "Error removing item from cart" });
   }
 };
+
+export const updateCartItem = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { productId, quantity, attributes } = req.body;
+
+    const cart = await cartModel.findOne({ user: userId });
+
+    if (!cart) {
+      return res.status(404).json({ message: "Cart not found" });
+    }
+
+    const itemIndex = cart.items.findIndex(
+      (item) =>
+        item.product.toString() === productId &&
+        JSON.stringify(item.attributes) === JSON.stringify(attributes)
+    );
+
+    if (itemIndex === -1) {
+      return res.status(404).json({ message: "Item not found in cart" });
+    }
+
+    // Update quantity and attributes
+    cart.items[itemIndex].quantity = quantity;
+    cart.items[itemIndex].attributes = attributes;
+
+    cart.updatedAt = new Date();
+    await cart.save();
+
+    res.status(200).json({ message: "Cart item updated successfully", cart });
+  } catch (error) {
+    console.error("Error updating cart item:", error);
+    res.status(500).json({ message: "Error updating cart item" });
+  }
+};
+
+// export const addToCart = async (req, res) => {
+//   try {
+//     const { productId, quantity, attributes } = req.body;
+//     const userId = req.user.id; // Assuming you have middleware to extract user ID from JWT
+
+//     console.log(userId, "userid");
+
+//     let cart = await cartModel.findOne({ user: userId });
+
+//     if (!cart) {
+//       cart = new cartModel({ user: userId, items: [] });
+//     }
+
+//     const existingItemIndex = cart.items.findIndex(
+//       (item) =>
+//         item.product.toString() === productId &&
+//         JSON.stringify(item.attributes) === JSON.stringify(attributes)
+//     );
+
+//     if (existingItemIndex > -1) {
+//       cart.items[existingItemIndex].quantity += quantity;
+//     } else {
+//       cart.items.push({ product: productId, quantity, attributes });
+//     }
+
+//     cart.updatedAt = new Date();
+
+//     await cart.save();
+
+//     res.status(200).json({ message: "Item added to cart successfully", cart });
+//   } catch (error) {
+//     console.error("Error adding item to cart:", error);
+//     res.status(500).json({ message: "Error adding item to cart" });
+//   }
+// };
+
+// export const removeFromCart = async (req, res) => {
+//   try {
+//     const userId = req.user.id; // Assuming the user ID is available from the JWT token
+//     const { productId, quantity, attributes } = req.body;
+
+//     // Find the user's cart
+//     const cart = await cartModel.findOne({ user: userId });
+
+//     if (!cart) {
+//       return res.status(404).json({ message: "Cart not found" });
+//     }
+
+//     // Find the index of the item in the cart
+//     const itemIndex = cart.items.findIndex((item) => {
+//       console.log(item.product.toString(), productId);
+//       item.product.toString() === productId &&
+//         JSON.stringify(item.attributes) === JSON.stringify(attributes);
+//     });
+
+//     if (itemIndex === -1) {
+//       return res.status(404).json({ message: "Item not found in cart" });
+//     }
+
+//     // If quantity is not provided or is greater than or equal to the current quantity, remove the entire item
+//     if (!quantity || quantity >= cart.items[itemIndex].quantity) {
+//       cart.items.splice(itemIndex, 1);
+//     } else {
+//       // Otherwise, reduce the quantity
+//       cart.items[itemIndex].quantity -= quantity;
+//     }
+
+//     // If cart becomes empty, you might want to delete it entirely
+//     if (cart.items.length === 0) {
+//       await cartModel.findByIdAndDelete(cart._id);
+//       return res
+//         .status(200)
+//         .json({ message: "Cart is now empty and has been removed" });
+//     }
+
+//     // Save the updated cart
+//     cart.updatedAt = new Date();
+//     await cart.save();
+
+//     res
+//       .status(200)
+//       .json({ message: "Item removed from cart successfully", cart });
+//   } catch (error) {
+//     console.error("Error removing item from cart:", error);
+//     res.status(500).json({ message: "Error removing item from cart" });
+//   }
+// };
 
 // export async function addToCart(req, res) {
 //   const { cart } = req.body;
