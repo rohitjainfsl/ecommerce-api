@@ -382,6 +382,7 @@ export async function rating(req, res) {
         },
         { new: true }
       );
+      updatedProduct.populate("ratings.postedBy", "name");
     } else {
       //IF IT'S A NEW RATING:
       // ADD A NEW RATING
