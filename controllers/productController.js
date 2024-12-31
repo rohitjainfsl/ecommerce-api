@@ -317,7 +317,8 @@ export async function getSingleProduct(req, res) {
   const idToFind = req.params.id;
   const singleProduct = await productModel
     .findById({ _id: idToFind })
-    .populate("ratings.postedBy", "firstname", "lastname")
+    // .populate("ratings.postedBy", "firstname", "lastname")
+    .populate({ path: "ratings.postedBy", select: "firstname lastname" })
     .select("-password");
   res.json(singleProduct);
 }
