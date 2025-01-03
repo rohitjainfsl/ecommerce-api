@@ -39,8 +39,3 @@ try {
 } catch (err) {
   console.log(err);
 }
-
-
-
-
-const num = [23,34,11,56,76,1,0,9, 57]
