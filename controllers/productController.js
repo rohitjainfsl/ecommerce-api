@@ -77,8 +77,6 @@ export async function getAllProducts(req, res) {
       }
     }
 
-    // const products = await productModel.find(query).sort(sortOption);
-
     aggregationPipeline = [
       { $match: query },
       {
@@ -168,92 +166,9 @@ export async function getAllProducts(req, res) {
       aggregationPipeline.push({ $sort: sortOption });
     }
 
-    // const products = await productModel.aggregate([
-    //   { $match: query },
-    //   {
-    //     $addFields: {
-    //       ratings: {
-    //         $ifNull: ["$ratings", []],
-    //       },
-    //     },
-    //   },
-    //   {
-    //     $lookup: {
-    //       from: "users",
-    //       localField: "ratings.postedBy",
-    //       foreignField: "_id",
-    //       as: "ratingUsers",
-    //     },
-    //   },
-    //   {
-    //     $addFields: {
-    //       ratings: {
-    //         $map: {
-    //           input: "$ratings",
-    //           as: "rating",
-    //           in: {
-    //             $mergeObjects: [
-    //               "$$rating",
-    //               {
-    //                 postedBy: {
-    //                   $let: {
-    //                     vars: {
-    //                       user: {
-    //                         $arrayElemAt: [
-    //                           {
-    //                             $filter: {
-    //                               input: "$ratingUsers",
-    //                               cond: {
-    //                                 $eq: ["$$this._id", "$$rating.postedBy"],
-    //                               },
-    //                             },
-    //                           },
-    //                           0,
-    //                         ],
-    //                       },
-    //                     },
-    //                     in: {
-    //                       _id: "$$user._id",
-    //                       fullName: {
-    //                         $concat: [
-    //                           { $ifNull: ["$$user.firstname", ""] },
-    //                           {
-    //                             $cond: [
-    //                               {
-    //                                 $and: [
-    //                                   { $ifNull: ["$$user.firstname", false] },
-    //                                   { $ifNull: ["$$user.lastname", false] },
-    //                                 ],
-    //                               },
-    //                               " ",
-    //                               "",
-    //                             ],
-    //                           },
-    //                           { $ifNull: ["$$user.lastname", ""] },
-    //                         ],
-    //                       },
-    //                     },
-    //                   },
-    //                 },
-    //               },
-    //             ],
-    //           },
-    //         },
-    //       },
-    //     },
-    //   },
-    //   {
-    //     $project: {
-    //       ratingUsers: 0,
-    //       "ratings.postedBy.password": 0,
-    //       "ratings.postedBy.email": 0,
-    //       // Add any other fields you want to exclude
-    //     },
-    //   },
-    //   { $sort: sortOption },
-    // ]);
-
     const products = await productModel.aggregate(aggregationPipeline);
+
+    console.log(products);
 
     res.json(products);
   } catch (err) {
