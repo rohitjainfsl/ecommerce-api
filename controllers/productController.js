@@ -168,7 +168,7 @@ export async function getAllProducts(req, res) {
 
     const products = await productModel.aggregate(aggregationPipeline);
 
-    console.log(products);
+    // console.log(products);
 
     res.json(products);
   } catch (err) {
@@ -229,13 +229,18 @@ export async function deleteProduct(req, res) {
 //FETCH A SINGLE PRODUCT
 
 export async function getSingleProduct(req, res) {
-  const idToFind = req.params.id;
-  const singleProduct = await productModel
-    .findById({ _id: idToFind })
-    // .populate("ratings.postedBy", "firstname", "lastname")
-    .populate({ path: "ratings.postedBy", select: "firstname lastname" })
-    .select("-password");
-  res.json(singleProduct);
+  try {
+    const idToFind = req.params.id;
+
+    const singleProduct = await productModel
+      .findById({ _id: idToFind })
+      .populate({ path: "ratings.postedBy", select: "firstname lastname" })
+      .select("-password");
+    res.json(singleProduct);
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).send({ error: error.message });
+  }
 }
 
 export async function addToWishlist(req, res) {
