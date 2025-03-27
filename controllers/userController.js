@@ -29,13 +29,11 @@ export async function loginUser(req, res) {
 
     const checkUser = await userModel.findOne({ email }).exec();
 
-    if (
-      !checkUser ||
-      !bcrypt.compare(password, checkUser.password) ||
-      checkUser.role !== role
-    ) {
-      return res.status(500).json({ error: "Invalid Credentials" });
+    if(!checkUser)  return res.status(400).json({error: "Invalid username"});
+    if (!bcrypt.compare(password, checkUser.password)) {
+      return res.status(400).json({ error: "Invalid Password" });
     }
+    if(!checkUser.role !== role)  return res.status(400).json({ error: "Invalid Role" });
 
     //Create a token using JWT
     const token = generateToken(checkUser);
