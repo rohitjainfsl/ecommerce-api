@@ -30,12 +30,13 @@ export async function loginUser(req, res) {
     const checkUser = await userModel.findOne({ email }).exec();
 
     if(!checkUser)  return res.status(400).json({error: "Invalid username"});
-    console.log(await bcrypt.compare(password, checkUser.password));
+    
     if (await bcrypt.compare(password, checkUser.password) === false) {
       return res.status(400).json({ error: "Invalid Password" });
     }
     if(checkUser.role !== role)  return res.status(400).json({ error: "Invalid Role" });
 
+    console.log("here");
     //Create a token using JWT
     const token = generateToken(checkUser);
 
