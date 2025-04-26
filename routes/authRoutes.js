@@ -9,7 +9,11 @@ authRouter.get("/me", authMiddleware, (req, res) => {
 });
 
 authRouter.post("/logout", (req, res) => {
-  res.clearCookie("auth_token").json({ message: "Logged out successfully" });
+  res.clearCookie("auth_token", {
+    httpOnly: false,
+    secure: "true",
+    sameSite: "none"
+  }).json({ message: "Logged out successfully" });
 });
 
 export default authRouter;
