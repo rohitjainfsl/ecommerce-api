@@ -25,7 +25,7 @@ export async function registerUser(req, res) {
 export async function loginUser(req, res) {
   try {
     const { email, password, role } = req.body;
-    // console.log(email, password, role);
+    console.log(email, password, role);
     let error = 0;
 
     const checkUser = await userModel.findOne({ email }).exec();
