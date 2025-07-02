@@ -65,7 +65,7 @@ export async function loginUser(req, res) {
 export async function logoutUser(req, res) {
   try {
     res.clearCookie("auth_token", {
-      httpOnly: false,
+      httpOnly: true,
       secure: "true",
       sameSite: "none",
     });
