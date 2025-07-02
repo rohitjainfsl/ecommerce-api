@@ -66,7 +66,7 @@ export async function logoutUser(req, res) {
   const role ="user"
   try{
   res.clearCookie(`${role}auth_token`, {
-    httpOnly: false,
+    httpOnly: true,
     secure: "true",
     sameSite: "none"
   }).json({ message: "Logged out successfully" });
