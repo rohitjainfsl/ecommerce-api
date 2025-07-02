@@ -69,7 +69,7 @@ export async function logoutUser(req, res) {
     secure: "true",
     sameSite: "none"
   }).json({ message: "Logged out successfully" });
-  } catch (err) {
+   catch (err) {
     res.status(500).json({ error: err });
   }
 }
