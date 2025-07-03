@@ -12,10 +12,11 @@ import authRouter from "./routes/authRoutes.js";
 const PORT = process.env.PORT;
 const app = express();
 const corsOptions = {
-  origin:
-    process.env.NODE_ENV === "production"
-      ? "*"
-      : "http://localhost:5173",
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    return callback(null, true); // Allow all origins
+  },
   credentials: true, // This allows the server to accept cookies
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed methods
   allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
