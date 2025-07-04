@@ -2,12 +2,12 @@
 
 ### ENDPOINTS:
 
-PRODUCTS:
+#### PRODUCTS:
 	- all products: [GET]: /api/product
 	- single product: [GET]: /api/product/{productId}
 
 
-USER:
+#### USER:
  	- registration: [POST]: /api/user/register
   	- fields: firstname, lastname, gender, email, password, role="user"
    
@@ -19,9 +19,9 @@ USER:
  	- check user status: [GET] /api/user/me
 
 
-CART:
- - add to cart: [POST]: /api/cart/add
-  - format to send:
+#### CART:
+ 	- add to cart: [POST]: /api/cart/add
+  	- format to send:
 	{
   		"productId": "66f18c7e3ebaaeac81783c2f",
 		"quantity": 1,
@@ -31,4 +31,4 @@ CART:
 		}
 	}
 
- - fetch user cart: [GET]: /api/cart/get
+ 	- fetch user cart: [GET]: /api/cart/get
